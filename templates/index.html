@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardioAI | Disease Prediction from Medical Data</title>
+    <meta name="description" content="AI-powered medical disease classification system using UCI Heart Disease dataset with Logistic Regression, SVM, Random Forest, and XGBoost.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 21.23l7.65-8.22.77-.78a5.4 5.4 0 0 0 0-7.65z"></path>
+                        <path d="M12 5.5v15" stroke-dasharray="2 2"></path>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>CardioAI <span class="tag">TASK 4</span></h1>
+                    <p>Disease Prediction from Medical Data • UCI ML Repository</p>
+                </div>
+            </div>
+
+            <!-- Key Metric Highlights -->
+            <div class="header-badges">
+                <div class="metric-pill">
+                    <span class="pill-label">Top Accuracy</span>
+                    <span class="pill-val">88.52%</span>
+                </div>
+                <div class="metric-pill">
+                    <span class="pill-label">Max Recall</span>
+                    <span class="pill-val">92.86%</span>
+                </div>
+                <div class="metric-pill">
+                    <span class="pill-label">Algorithms</span>
+                    <span class="pill-val">LR • SVM • RF • XGB</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs-wrapper">
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="diagnosis" id="tabBtnDiagnosis">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Patient Prediction
+            </button>
+            <button class="nav-tab" data-tab="benchmark" id="tabBtnBenchmark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Model Benchmarks
+            </button>
+            <button class="nav-tab" data-tab="workflow" id="tabBtnWorkflow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Workflow & Pipeline
+            </button>
+            <button class="nav-tab" data-tab="features" id="tabBtnFeatures">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Clinical Glossary
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- TAB 1: PATIENT DIAGNOSIS & PREDICTION -->
+        <section id="tab-diagnosis" class="tab-content active">
+            <!-- Preset Patient Quick Loaders -->
+            <div class="presets-panel card">
+                <div class="presets-header">
+                    <h3>⚡ Quick Load Patient Profiles</h3>
+                    <p>Select a pre-configured clinical profile to instantly populate parameters:</p>
+                </div>
+                <div class="preset-buttons">
+                    <button type="button" class="btn-preset high-risk" id="btnPresetHigh">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>High-Risk Patient</strong>
+                            <span>67yo M • Angina • BP 160 • Chol 286</span>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-preset low-risk" id="btnPresetLow">
+                        <span class="icon">🛡️</span>
+                        <div>
+                            <strong>Low-Risk Patient</strong>
+                            <span>41yo F • Normal ECG • BP 120 • Chol 180</span>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-preset borderline" id="btnPresetBorderline">
+                        <span class="icon">⚖️</span>
+                        <div>
+                            <strong>Borderline Patient</strong>
+                            <span>55yo M • Moderate BP 135 • Chol 245</span>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-preset reset" id="btnReset">
+                        <span class="icon">↺</span>
+                        <div>
+                            <strong>Reset Form</strong>
+                            <span>Default Baseline Values</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="diagnosis-grid">
+                <!-- Form Column -->
+                <div class="form-column">
+                    <form id="patientForm" class="card form-card">
+                        <div class="form-section-title">
+                            <span class="num">1</span>
+                            <h3>Demographics & Vitals</h3>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="age">Age (years): <span class="val-badge" id="valAge">55</span></label>
+                                <input type="range" id="age" name="age" min="25" max="80" value="55" step="1">
+                                <div class="range-labels"><span>25</span><span>50</span><span>80</span></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sex">Biological Sex</label>
+                                <select id="sex" name="sex" class="form-select">
+                                    <option value="1" selected>Male (1)</option>
+                                    <option value="0">Female (0)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="trestbps">Resting BP (mm Hg): <span class="val-badge" id="valTrestbps">130</span></label>
+                                <input type="range" id="trestbps" name="trestbps" min="90" max="200" value="130" step="1">
+                                <div class="range-labels"><span>90 (Normal)</span><span>140 (Hyper)</span><span>200</span></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="chol">Serum Cholesterol (mg/dl): <span class="val-badge" id="valChol">230</span></label>
+                                <input type="range" id="chol" name="chol" min="120" max="500" value="230" step="5">
+                                <div class="range-labels"><span>120</span><span>200 (Desirable)</span><span>500</span></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="thalach">Max Heart Rate (bpm): <span class="val-badge" id="valThalach">150</span></label>
+                                <input type="range" id="thalach" name="thalach" min="70" max="210" value="150" step="1">
+                                <div class="range-labels"><span>70</span><span>140</span><span>210</span></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fbs">Fasting Blood Sugar</label>
+                                <select id="fbs" name="fbs" class="form-select">
+                                    <option value="0" selected>≤ 120 mg/dl (Normal)</option>
+                                    <option value="1">> 120 mg/dl (Elevated / Diabetic)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title">
+                            <span class="num">2</span>
+                            <h3>Clinical Symptoms & Electrocardiography</h3>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cp">Chest Pain Type (cp)</label>
+                            <select id="cp" name="cp" class="form-select">
+                                <option value="1">1: Typical Angina (Definite cardiac pain on exertion)</option>
+                                <option value="2">2: Atypical Angina (Non-classic chest discomfort)</option>
+                                <option value="3">3: Non-Anginal Pain (Musculoskeletal/Digestive)</option>
+                                <option value="4" selected>4: Asymptomatic (Silent / High statistical risk)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="restecg">Resting ECG Results</label>
+                                <select id="restecg" name="restecg" class="form-select">
+                                    <option value="0" selected>0: Normal</option>
+                                    <option value="1">1: ST-T Wave Abnormality</option>
+                                    <option value="2">2: Left Ventricular Hypertrophy</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="exang">Exercise Induced Angina</label>
+                                <select id="exang" name="exang" class="form-select">
+                                    <option value="0" selected>No (0)</option>
+                                    <option value="1">Yes (1)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="oldpeak">ST Depression (oldpeak): <span class="val-badge" id="valOldpeak">1.0</span></label>
+                                <input type="range" id="oldpeak" name="oldpeak" min="0.0" max="6.0" value="1.0" step="0.1">
+                                <div class="range-labels"><span>0.0 (Normal)</span><span>2.0 (Ischemia)</span><span>6.0</span></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="slope">Slope of Peak ST Segment</label>
+                                <select id="slope" name="slope" class="form-select">
+                                    <option value="1">1: Upsloping (Better prognosis)</option>
+                                    <option value="2" selected>2: Flat (Typical sign of ischemia)</option>
+                                    <option value="3">3: Downsloping (High ischemia risk)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="ca">Major Vessels Colored (Fluoroscopy: 0-3)</label>
+                                <select id="ca" name="ca" class="form-select">
+                                    <option value="0" selected>0 Major Vessels Colored</option>
+                                    <option value="1">1 Major Vessel Colored</option>
+                                    <option value="2">2 Major Vessels Colored</option>
+                                    <option value="3">3 Major Vessels Colored</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="thal">Thallium Heart Scan (Thal)</label>
+                                <select id="thal" name="thal" class="form-select">
+                                    <option value="3" selected>3: Normal Blood Flow</option>
+                                    <option value="6">6: Fixed Defect (Previous Infarct)</option>
+                                    <option value="7">7: Reversible Defect (Active Ischemia)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title">
+                            <span class="num">3</span>
+                            <h3>Classifier Selection</h3>
+                        </div>
+
+                        <div class="model-selection-group">
+                            <label class="model-radio-card">
+                                <input type="radio" name="model" value="all" checked>
+                                <span class="radio-content">
+                                    <strong>Multi-Model Ensemble</strong>
+                                    <small>Consensus of all 4 algorithms</small>
+                                </span>
+                            </label>
+                            <label class="model-radio-card">
+                                <input type="radio" name="model" value="rf">
+                                <span class="radio-content">
+                                    <strong>Random Forest</strong>
+                                    <small>Top F1: 88.1% • Acc: 88.5%</small>
+                                </span>
+                            </label>
+                            <label class="model-radio-card">
+                                <input type="radio" name="model" value="xgb">
+                                <span class="radio-content">
+                                    <strong>XGBoost</strong>
+                                    <small>Acc: 88.5% • Recall: 92.9%</small>
+                                </span>
+                            </label>
+                            <label class="model-radio-card">
+                                <input type="radio" name="model" value="lr">
+                                <span class="radio-content">
+                                    <strong>Logistic Regression</strong>
+                                    <small>High Recall: 92.9%</small>
+                                </span>
+                            </label>
+                            <label class="model-radio-card">
+                                <input type="radio" name="model" value="svm">
+                                <span class="radio-content">
+                                    <strong>SVM (RBF Kernel)</strong>
+                                    <small>Acc: 85.3% • AUC: 94.4%</small>
+                                </span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-predict" id="btnSubmitPredict">
+                            <span class="btn-text">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Run Disease Prediction
+                            </span>
+                            <span class="btn-loader" style="display:none;">Analyzing Clinical Indicators...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Prediction Results Column -->
+                <div class="result-column">
+                    <div id="resultsCard" class="card results-card empty-state">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                </svg>
+                            </div>
+                            <h3>Awaiting Patient Data</h3>
+                            <p>Configure patient vitals and click <strong>"Run Disease Prediction"</strong> or select one of the quick load presets above to view automated diagnostic classification.</p>
+                        </div>
+
+                        <!-- Active Result View (Populated dynamically) -->
+                        <div id="activeResult" style="display: none;">
+                            <div class="result-header">
+                                <span class="algo-badge" id="resModelBadge">Random Forest</span>
+                                <span class="date-badge" id="resTimestamp">Just now</span>
+                            </div>
+
+                            <!-- Diagnosis Primary Banner -->
+                            <div id="diagnosisBanner" class="diagnosis-banner present">
+                                <div class="banner-icon-col" id="resIconCol">
+                                    <span id="bannerIcon">⚠️</span>
+                                </div>
+                                <div class="banner-text-col">
+                                    <span class="caption">Predicted Disease Status</span>
+                                    <h2 id="resDiseaseClass">DISEASE PRESENT</h2>
+                                    <p id="resSubStatus">High probability of coronary heart disease detected.</p>
+                                </div>
+                            </div>
+
+                            <!-- Probability Meter -->
+                            <div class="meter-box">
+                                <div class="meter-meta">
+                                    <span>Estimated Disease Probability</span>
+                                    <strong id="resProbText">89.9%</strong>
+                                </div>
+                                <div class="meter-bar-track">
+                                    <div class="meter-bar-fill" id="resProbBar" style="width: 89.9%;"></div>
+                                </div>
+                                <div class="meter-labels">
+                                    <span>0% Low Risk (Absent)</span>
+                                    <span>50% Threshold</span>
+                                    <span>100% High Risk (Present)</span>
+                                </div>
+                            </div>
+
+                            <!-- Multi-Algorithm Breakdown Grid -->
+                            <div class="algo-breakdown">
+                                <h4>All Algorithm Outputs:</h4>
+                                <div class="algo-grid" id="algoCardsGrid">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Identified Clinical Risk Factors -->
+                            <div class="risk-factors-section">
+                                <h4>Identified Clinical Risk Indicators:</h4>
+                                <ul id="riskFactorsList" class="risk-list">
+                                    <!-- Populated via JS -->
+                                </ul>
+                            </div>
+
+                            <!-- Medical Disclaimer -->
+                            <div class="disclaimer-alert">
+                                <strong>⚠️ Clinical Demonstration Notice:</strong>
+                                <p>This machine learning prediction is generated for educational evaluation purposes based on the UCI Heart Disease dataset. It is not an authorized medical diagnosis system.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MODEL BENCHMARKS & EVALUATION -->
+        <section id="tab-benchmark" class="tab-content">
+            <div class="card benchmark-header-card">
+                <h2>Model Evaluation & Performance Benchmarking</h2>
+                <p>All four models were trained on 80% (242 samples) and evaluated on a held-out test split of 20% (61 unseen samples) using stratified sampling to maintain class balance.</p>
+            </div>
+
+            <!-- Comparison Table Card -->
+            <div class="card table-card">
+                <div class="table-header">
+                    <h3>🏆 Classification Metrics on Unseen Test Data</h3>
+                    <span class="badge-success">Evaluation Complete</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall (Sensitivity)</th>
+                                <th>F1 Score</th>
+                                <th>ROC-AUC</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="top-performer">
+                                <td>
+                                    <strong>Random Forest</strong>
+                                    <span class="sub">100 Trees • Max Depth 5</span>
+                                </td>
+                                <td><span class="score-badge best">88.52%</span></td>
+                                <td>83.87%</td>
+                                <td>92.86%</td>
+                                <td><span class="score-badge best">88.14%</span></td>
+                                <td><span class="score-badge best">95.89%</span></td>
+                                <td><span class="tag-gold">★ Best F1 & AUC</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>XGBoost Classifier</strong>
+                                    <span class="sub">100 Boosters • Depth 3</span>
+                                </td>
+                                <td><span class="score-badge best">88.52%</span></td>
+                                <td>83.87%</td>
+                                <td>92.86%</td>
+                                <td><span class="score-badge best">88.14%</span></td>
+                                <td>94.37%</td>
+                                <td><span class="tag-silver">Top Accuracy</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Logistic Regression</strong>
+                                    <span class="sub">Standard Scaled • L2 Reg</span>
+                                </td>
+                                <td>86.89%</td>
+                                <td>81.25%</td>
+                                <td>92.86%</td>
+                                <td>86.67%</td>
+                                <td>95.13%</td>
+                                <td><span class="tag-blue">High Sensitivity</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Support Vector Machine (SVM)</strong>
+                                    <span class="sub">RBF Kernel • Probability Est</span>
+                                </td>
+                                <td>85.25%</td>
+                                <td>80.65%</td>
+                                <td>89.29%</td>
+                                <td>84.75%</td>
+                                <td>94.37%</td>
+                                <td><span class="tag-purple">Balanced Boundary</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Visualization Gallery -->
+            <div class="plots-grid">
+                <div class="card plot-card">
+                    <div class="plot-title">
+                        <h4>Model Performance Comparison</h4>
+                        <span>Accuracy, Precision, Recall, F1 Score</span>
+                    </div>
+                    <img src="/static/plots/model_comparison.png" alt="Model Comparison Chart" class="plot-img" loading="lazy">
+                </div>
+
+                <div class="card plot-card">
+                    <div class="plot-title">
+                        <h4>Confusion Matrices (Unseen Test Set)</h4>
+                        <span>True vs Predicted (Absent vs Present)</span>
+                    </div>
+                    <img src="/static/plots/confusion_matrices.png" alt="Confusion Matrices" class="plot-img" loading="lazy">
+                </div>
+
+                <div class="card plot-card">
+                    <div class="plot-title">
+                        <h4>Receiver Operating Characteristic (ROC)</h4>
+                        <span>Sensitivity vs Specificity Tradeoff</span>
+                    </div>
+                    <img src="/static/plots/roc_curves.png" alt="ROC Curves" class="plot-img" loading="lazy">
+                </div>
+
+                <div class="card plot-card">
+                    <div class="plot-title">
+                        <h4>Feature Importance Ranking</h4>
+                        <span>Random Forest vs XGBoost</span>
+                    </div>
+                    <img src="/static/plots/feature_importance.png" alt="Feature Importance" class="plot-img" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: WORKFLOW & PIPELINE -->
+        <section id="tab-workflow" class="tab-content">
+            <div class="card">
+                <h2>10-Step End-to-End Machine Learning Workflow</h2>
+                <p>Complete lifecycle from raw clinical patient records to scaled classification and inference:</p>
+
+                <div class="pipeline-steps">
+                    <div class="step-card">
+                        <div class="step-num">01</div>
+                        <div class="step-body">
+                            <h4>Patient Data Collection</h4>
+                            <p>Ingested 303 patient records with 14 clinical features from the UCI Machine Learning Cleveland Heart Disease repository.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">02</div>
+                        <div class="step-body">
+                            <h4>Data Cleaning & Imputation</h4>
+                            <p>Inspected null values ('?'). Imputed missing discrete fluoroscopy (<code>ca</code>: 4 records) and thallium (<code>thal</code>: 2 records) with modes. Verified 0 duplicate rows.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">03</div>
+                        <div class="step-body">
+                            <h4>Feature & Target Separation</h4>
+                            <p>Extracted 13 clinical predictors ($X$) and binarized heart disease target ($y$): class 0 for Absent (&lt;50% narrowing) and classes 1-4 mapped to 1 for Present.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">04</div>
+                        <div class="step-body">
+                            <h4>Stratified Train / Test Split</h4>
+                            <p>Partitioned data into 80% training set (242 samples) and 20% test set (61 unseen samples) preserving the 54.1% / 45.9% class ratio.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">05</div>
+                        <div class="step-body">
+                            <h4>Feature Scaling</h4>
+                            <p>Applied <code>StandardScaler</code> fit strictly on training set and transformed both training and unseen testing sets to avoid data leakage.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">06</div>
+                        <div class="step-body">
+                            <h4>Classification Model Training</h4>
+                            <p>Trained 4 distinct algorithms: Logistic Regression, Support Vector Machine (SVM), Random Forest, and XGBoost.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">07</div>
+                        <div class="step-body">
+                            <h4>Unseen Data Testing</h4>
+                            <p>Evaluated generalization ability on strictly unseen held-out test records to ensure no overfitting.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">08</div>
+                        <div class="step-body">
+                            <h4>Multi-Metric Evaluation</h4>
+                            <p>Computed Accuracy, Precision, Recall, F1 Score, ROC-AUC score, and complete 2x2 Confusion Matrices.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">09</div>
+                        <div class="step-body">
+                            <h4>Model Comparison & Benchmarking</h4>
+                            <p>Compared all classifiers side-by-side. Random Forest achieved the highest F1 Score (88.14%) and ROC-AUC (95.89%).</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">10</div>
+                        <div class="step-body">
+                            <h4>New Patient Prediction</h4>
+                            <p>Deployed saved estimators and scaler for real-time single patient prediction, probability output, and clinical risk analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: CLINICAL GLOSSARY -->
+        <section id="tab-features" class="tab-content">
+            <div class="card">
+                <h2>Clinical Feature Dictionary & Medical Interpretation</h2>
+                <div class="glossary-grid">
+                    <div class="glossary-item">
+                        <h4>age</h4>
+                        <p>Patient age in completed years. Heart disease risk steadily rises with increasing age.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>sex</h4>
+                        <p>Biological sex (1 = male, 0 = female). Statistically, males show higher premature coronary artery incidence.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>cp (Chest Pain Type)</h4>
+                        <p>1: Typical angina, 2: Atypical angina, 3: Non-anginal pain, 4: Asymptomatic. In ischemic heart disease datasets, asymptomatic cases paradoxically correlate strongly with late-stage diagnosis.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>trestbps (Resting Blood Pressure)</h4>
+                        <p>Resting arterial pressure in mm Hg upon hospital admission. Values &gt; 130 indicate hypertension.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>chol (Serum Cholesterol)</h4>
+                        <p>Total serum cholesterol in mg/dl. Desirable levels are &lt; 200 mg/dl; &ge; 240 mg/dl signifies elevated hypercholesterolemia.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>fbs (Fasting Blood Sugar)</h4>
+                        <p>Fasting blood sugar &gt; 120 mg/dl (1 = true, 0 = false). Indicator of insulin resistance or underlying diabetes mellitus.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>restecg (Resting ECG)</h4>
+                        <p>0: Normal, 1: ST-T wave abnormality (T wave inversions or ST displacement &gt; 0.05 mV), 2: Left ventricular hypertrophy.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>thalach (Max Heart Rate Achieved)</h4>
+                        <p>Peak heart rate (beats per minute) during treadmill stress testing. Inability to reach expected target HR indicates reduced cardiac reserve.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>exang (Exercise-Induced Angina)</h4>
+                        <p>Development of angina symptoms during exercise stress test (1 = yes, 0 = no). Strong indicator of myocardial ischemia.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>oldpeak (ST Depression)</h4>
+                        <p>ST segment depression induced by exercise relative to rest. Reflects the degree of subendocardial ischemia.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>slope (ST Segment Slope)</h4>
+                        <p>Slope of peak exercise ST segment: 1 = Upsloping (mild/favorable), 2 = Flat (ischemia sign), 3 = Downsloping (severe ischemia).</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>ca (Major Fluoroscopy Vessels)</h4>
+                        <p>Number of major coronary blood vessels (0 to 3) showing narrowing when examined under fluoroscopy.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <h4>thal (Thallium Heart Scintigraphy)</h4>
+                        <p>3 = Normal perfusion, 6 = Fixed defect (prior myocardial necrosis), 7 = Reversible defect (active inducible ischemia).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>Task 4: Disease Prediction from Medical Data • Powered by Scikit-Learn & XGBoost</p>
+            <p class="disclaimer-text"><strong>Educational Disclaimer:</strong> This software is engineered for educational, academic, and research demonstration. It is not approved by medical regulatory authorities as a medical device.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
